@@ -1,6 +1,7 @@
 package com.ksefpdf;
 
 import io.alapierre.ksef.fop.InvoiceGenerationParams;
+import io.alapierre.ksef.fop.InvoiceQRCodeGeneratorRequest;
 import io.alapierre.ksef.fop.InvoiceSchema;
 import io.alapierre.ksef.fop.Language;
 import io.alapierre.ksef.fop.PdfGenerator;
@@ -31,9 +32,14 @@ public class Main {
             try (InputStream fopConfig = Main.class.getResourceAsStream("/fop.xconf")) {
                 PdfGenerator generator = new PdfGenerator(fopConfig);
 
+                String verificationLink = "https://ksef.mf.gov.pl/web/verify/" + ksefNumber;
+                InvoiceQRCodeGeneratorRequest qrRequest =
+                        InvoiceQRCodeGeneratorRequest.onlineQrBuilder(verificationLink);
+
                 InvoiceGenerationParams params = InvoiceGenerationParams.builder()
                         .schema(InvoiceSchema.FA3_1_0_E)
                         .ksefNumber(ksefNumber)
+                        .invoiceQRCodeGeneratorRequest(qrRequest)
                         .language(Language.PL)
                         .build();
 
