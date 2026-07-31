@@ -1,12 +1,14 @@
 package com.ksefpdf;
 
+import io.alapierre.ksef.fop.InvoiceGenerationParams;
+import io.alapierre.ksef.fop.InvoiceSchema;
+import io.alapierre.ksef.fop.Language;
 import io.alapierre.ksef.fop.PdfGenerator;
 import io.javalin.Javalin;
 import io.javalin.http.ContentType;
 
-import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 
 public class Main {
 
@@ -29,14 +31,20 @@ public class Main {
             try (InputStream fopConfig = Main.class.getResourceAsStream("/fop.xconf")) {
                 PdfGenerator generator = new PdfGenerator(fopConfig);
 
-                Source src = new StreamSource(new ByteArrayInputStream(xmlBytes));
+                InvoiceGenerationParams params = InvoiceGenerationParams.builder()
+                        .schema(InvoiceSchema.FA3_1_0_E)
+                        .ksefNumber(ksefNumber)
+                        .language(Language.PL)
+                        .build();
+
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-                generator.generateInvoice(src, ksefNumber, null, null, out);
+                generator.generateInvoice(xmlBytes, params, out);
 
                 ctx.contentType(ContentType.APPLICATION_PDF);
                 ctx.result(out.toByteArray());
             } catch (Exception e) {
+                e.printStackTrace();
                 ctx.status(500).result("Error generating PDF: " + e.getMessage());
             }
         });
